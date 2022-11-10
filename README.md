@@ -1,2 +1,3 @@
 # youtube_comment_scraper
-comment scraper with streamlit
+youtube comment scraper with streamlit
+Scraper is using the library from https://github.com/egbertbouman/youtube-comment-downloader
