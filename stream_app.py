@@ -1,15 +1,18 @@
-import itertools
 from youtube_comment_downloader import *
 import pandas as pd   
 import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
-import altair as alt
-import numpy as np
-from transformers import pipeline
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
 
+nltk.download('vader_lexicon')
+nltk.download('stopwords')
 
 downloader = YoutubeCommentDownloader()
+
+sia = SentimentIntensityAnalyzer()
+
 
 # Store the initial value of widgets in session state
 if "visibility" not in st.session_state:
@@ -27,15 +30,8 @@ def scrape(video_url):
     return df_scraped
 
 def analyze_df(df_comments):
-    comments_list = list(df_scraped['text'])
-
-    sentiment_pipeline = pipeline(model='distilbert-base-uncased-finetuned-sst-2-english')
-
-    inference = sentiment_pipeline(comments_list)
-
-    values_list = [list(inference[i].values()) for i in range(len(inference))]
-
-    df_scraped[['label','score']] = pd.DataFrame(values_list, columns = ['label','score'])
+    
+    df_comments['compound_scores'] = [sia.polarity_scores(el)['compound'] for el in df_comments['text']]
 
     return df_comments
 
@@ -54,26 +50,15 @@ if (run_scraper and you_video):
 
     # Creating histogram
     fig, ax = plt.subplots(figsize =(10, 7))
-    ax.hist(df_comments['score'], bins = [0, 0.2, 0.4, 0.6, 0.8, 1])
+    ax.hist(df_comments['compound_scores'], bins = [-1, -0.75, -0.50, -0.25, 0, 0.25, 0.5, 0.75, 1])
     
     # show plot
     st.pyplot(fig) 
 
-    df_coments = df_comments.sort_values(by=['score'],ascending = False)
+    df_coments = df_comments.sort_values(by=['compound_scores'],ascending = False)
 
     st.markdown('**Highest scoring comments**')
-    st.dataframe(df_coments[['text','score']].head(10))
+    st.dataframe(df_coments[['text','compound_scores']].head(10))
 
     st.markdown('**Lowest scoring comments**')
-    st.dataframe(df_coments[['text','score']].tail(10))
-
-
-    #auto bining
-    # df_coments['binning'] = pd.cut(df_coments['score'],5, labels=["bad","neutral_low", "neutral", "neutral-high","good"])
-
-    # hist_plot = alt.Chart(df_coments).mark_bar().encode(
-    #     x='binning',y='score',)
-
-    # st.write("Barplot Score")    
-
-    # st.altair_chart(hist_plot, use_container_width=True)
+    st.dataframe(df_coments[['text','compound_scores']].tail(10))
