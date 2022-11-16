@@ -6,9 +6,6 @@ import streamlit as st
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 
-nltk.download('vader_lexicon')
-nltk.download('stopwords')
-
 downloader = YoutubeCommentDownloader()
 
 sia = SentimentIntensityAnalyzer()

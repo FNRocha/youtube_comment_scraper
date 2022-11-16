@@ -16,4 +16,6 @@ RUN git clone https://github.com/FNRocha/youtube_comment_scraper .
 
 RUN pip3 install -r requirements.txt
 
+RUN python -m nltk.downloader vader_lexicon
+
 ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
